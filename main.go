@@ -19,9 +19,9 @@ const (
 )
 
 var (
-	plainFile  string
-	cipherFile string
-	exeMode    string
+	plainFile  *string
+	cipherFile *string
+	exeMode    *string
 )
 
 var (
@@ -143,23 +143,24 @@ func pkcs7Unpad(b []byte, blocksize int) ([]byte, error) {
 }
 
 func argsParse() {
-	flag.StringVar(&plainFile, "p", "plain.sh", "Plain text file (Default: plain.sh)")
-	flag.StringVar(&cipherFile, "c", "data.dat", "Cipher text file (Default: data.dat)")
-	flag.StringVar(&exeMode, "m", "run", "Execute mode[enc/run] {enc: 'encrypt script', run: 'run script'}")
+	plainFile = flag.String("p", "plain.sh", "Plain text file (Default: plain.sh)")
+	cipherFile = flag.String("c", "data.dat", "Cipher text file (Default: data.dat)")
+	exeMode = flag.String("m", "run", "Execute mode[enc/run] {enc: 'encrypt script', run: 'run script'}")
+
 	flag.Parse()
 }
 
 func main() {
 	argsParse()
 
-	if exeMode == "run" {
-		cipherText := readFile(cipherFile)
+	if *exeMode == "run" {
+		cipherText := readFile(*cipherFile)
 		plainText := decrypt(key, cipherText)
 		executeContent(plainText)
-	} else if exeMode == "enc" {
-		plainText := readFile(plainFile)
+	} else if *exeMode == "enc" {
+		plainText := readFile(*plainFile)
 		encrypted := encrypt(key, plainText)
-		writeFile(cipherFile, encrypted)
+		writeFile(*cipherFile, encrypted)
 	} else {
 		fmt.Printf("mode '%s' not support!!\n", exeMode)
 	}

@@ -7,7 +7,6 @@ import (
 	"crypto/rand"
 	"errors"
 	"flag"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -62,7 +61,7 @@ func executeContent(content []byte) error {
 func readFile(filename string) []byte {
 	content, err := ioutil.ReadFile(filename)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	return content
@@ -71,20 +70,23 @@ func readFile(filename string) []byte {
 func writeFile(filename string, content []byte) {
 	err := ioutil.WriteFile(filename, content, 0644)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
 func encrypt(key []byte, plaintext []byte) []byte {
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-	plaintext, _ = pkcs7Pad(plaintext, block.BlockSize())
+	plaintext, err = pkcs7Pad(plaintext, block.BlockSize())
+	if err != nil {
+		log.Fatal(err)
+	}
 	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
 	iv := ciphertext[:aes.BlockSize]
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	bm := cipher.NewCBCEncrypter(block, iv)
 	bm.CryptBlocks(ciphertext[aes.BlockSize:], plaintext)
@@ -96,13 +98,16 @@ func decrypt(key []byte, ciphertext []byte) []byte {
 	// Create the AES cipher
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	iv := ciphertext[:aes.BlockSize]
 	ciphertext = ciphertext[aes.BlockSize:]
 	bm := cipher.NewCBCDecrypter(block, iv)
 	bm.CryptBlocks(ciphertext, ciphertext)
-	ciphertext, _ = pkcs7Unpad(ciphertext, aes.BlockSize)
+	ciphertext, err = pkcs7Unpad(ciphertext, aes.BlockSize)
+	if err != nil {
+		log.Fatal(err)
+	}
 	return ciphertext
 }
 
@@ -165,7 +170,7 @@ func main() {
 		encrypted := encrypt(key, plainText)
 		writeFile(cipherFile, encrypted)
 	} else {
-		fmt.Printf("mode '%s' not support!!\n", exeMode)
+		log.Printf("mode '%s' not support!!\n", exeMode)
 	}
 
 }

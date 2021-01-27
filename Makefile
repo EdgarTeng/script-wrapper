@@ -4,8 +4,8 @@ build:
 
 .PHONY: enc
 enc:
-	./swrapper --m enc --p plain.sh --c plain.sh.enc
+	./swrapper -m enc -p plain.sh -c plain.sh.enc
 
 .PHONY: run
 run:
-	./swrapper --m run --c plain.sh.enc
+	./swrapper -m run -c plain.sh.enc
